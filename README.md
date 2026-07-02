@@ -88,9 +88,14 @@ The 18 canonical intake questions live in `prompts.js` (`INTAKE_QUESTIONS`).
 4. **Chronic care** — COPD/HTN/DM medication-adjustment recommendations decided
    by an AI council, delivered in one plain physician voice, physician confirms
    where one exists.
-5. **The physician layer** — an API where verified physicians worldwide
-   supervise the AI councils, add recommendations, or approve them: a telemed
-   blockchain of real doctors backing AI care for people everywhere.
+5. **The Physician Guild (InstantHPI Physician Network)** — physicians are
+   verified as valid practitioners against their regional medical boards and
+   receive IDs, so they and their approved AI works carry proof-of-work and
+   verification. The rule of the system: **the work is 100% AI, but physicians
+   do 100% of the verification.** The AIs are never alone — they debate every
+   case, must cite medical studies and guideline recommendations to support
+   their positions, and the discussion, report, and recommendations reach the
+   patient in the patient's own language.
 
 Support the roadmap: https://instanthpi.ai/donations ·
 Physicians Association ($100/mo, keeps InstantHPI free for physicians and
