@@ -1,0 +1,99 @@
+# Free Universal Healthcare AI — InstantHPI
+
+**AI automation for healthcare. Free universal health education with multi-agent discussions.**
+
+> The first goal: change healthcare so that quality care reaches **everyone,
+> for nearly no cost — universally**. Not just rich people and rich countries.
+
+This is the complete, working source of the InstantHPI Telegram bots
+(@InstantHPIBot / @freehealtheducationbot): a free health-education bot that
+walks anyone, in any language, through the same structured clinical intake
+(OPQRST) that physicians are trained on, then produces a clinical-grade
+HPI summary you can hand to any doctor on earth.
+
+Built and released by one board-certified family doctor who automated his own
+practice, paid for all of it out of his own money and revenue, and is now
+putting it in your hands. **Either you get involved — use it, fork it, build
+on it — or it dies on its own.**
+
+- Live bots: [@InstantHPIBot](https://t.me/InstantHPIBot) · [@freehealtheducationbot](https://t.me/freehealtheducationbot)
+- Roadmap + donations: https://instanthpi.ai/donations
+- Thread ledger (hash-chained index of every thread we post in): https://instanthpi.ai/4chan
+- Contact: cff@centremedicalfont.ca
+
+## What it is — and what it is not
+
+- Free health **education** and clinical-reasoning structure. Not medical advice,
+  not an emergency service, not a doctor replacement. **See a physical doctor
+  whenever that is possible.** This is a guidance tool for people in situations
+  too complex for their system — and for places with no reasonable access to
+  care (fewer than 1 physician per 10,000 people).
+- The AI, even where it is not as good as a full-fledged physician, is
+  vastly better than an untrained person guessing alone.
+- Answers are clearly marked as the output of **multiple AIs debating to
+  consensus** — never pretending to be a single human opinion.
+
+## How it works
+
+```
+patient → 18-question structured intake (OPQRST, skips what it already knows)
+        → HPI summary + follow-up questions (correction loop)
+        → multi-agent AI debate over the case (API calls, de-identified)
+        → consensus report: education, differentials, what needs to take place
+```
+
+State machine in `bot.js`: `idle → intake → confirming → followup → processing → complete`.
+The 18 canonical intake questions live in `prompts.js` (`INTAKE_QUESTIONS`).
+
+## Reproduce it (15 minutes)
+
+1. **Create a bot**: talk to [@BotFather](https://t.me/BotFather) on Telegram,
+   `/newbot`, copy the token.
+2. **Get a model API key**: the reference implementation calls DeepSeek
+   (any OpenAI-compatible endpoint works — swap the URL/key in `bot.js`).
+3. **Configure**: copy `.env.example` to `.env` and fill it in.
+4. **Run**:
+   ```bash
+   npm install
+   node bot.js
+   ```
+5. Message your bot. That's it. You are now running free structured
+   clinical reasoning for anyone you give the handle to.
+
+## Files
+
+| File | What it is |
+|---|---|
+| `bot.js` | The whole bot: Telegram polling, intake state machine, AI calls, PDF report |
+| `prompts.js` | The clinical prompts + the 18 canonical intake questions |
+| `analytics.js` | Privacy-safe aggregate metrics (no PHI) — consultations, languages, completion |
+| `docs/GLOBAL-HEALTH-STRATEGY.md` | The mission: WHO-level numbers, who this is for, funder metrics |
+| `docs/IMPACT-METRICS-DESIGN.md` | How impact is measured without collecting any PHI |
+
+## Privacy design
+
+- Identity is kept **distinct and separate** from the AI calls — models reason
+  over the case, not over you.
+- Only **de-identified information** is sent for the multi-agent discussion.
+- Analytics are aggregate-only (see `analytics.js`) — no personal health
+  information is stored or needed.
+
+## Roadmap (released 2026-07-02)
+
+1. **Now** — free bots, multi-AI consensus.
+2. **Memory** — full-history upload, chronicity indexation of every
+   conversation, dossier-managing AI keeps a true medical-record structure.
+3. **Local exe** — your record on your machine, isolated, multiple patients,
+   remembered encounters; only de-identified data ever leaves.
+4. **Chronic care** — COPD/HTN/DM medication-adjustment recommendations decided
+   by an AI council, delivered in one plain physician voice, physician confirms
+   where one exists.
+
+Support the roadmap: https://instanthpi.ai/donations ·
+Physicians Association ($100/mo, keeps InstantHPI free for physicians and
+funds app development): https://buy.stripe.com/4gMcN61u6fehf4I3yfbMQ44
+
+## License
+
+MIT — take it, run it, translate it, deploy it for your population.
+This is a group effort now.

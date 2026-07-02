@@ -1,0 +1,21 @@
+{
+  "name": "instanthpi-bot",
+  "version": "1.0.0",
+  "description": "Free AI-powered medical education via Telegram using the InstantHPI clinical method",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.22.1",
+    "node-telegram-bot-api": "^0.66.0",
+    "pdfkit": "^0.18.0",
+    "sql.js": "^1.14.1"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "playwright": "^1.58.2"
+  }
+}
