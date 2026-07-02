@@ -105,4 +105,6 @@ your population. Share your mods — they will be reviewed and the best ones
 folded back in for everyone.
 
 — Carlos Faviel Font, MD (board-certified family physician) · cff@centremedicalfont.ca
-Support: https://instanthpi.ai/donations
+In The Real World (Andrew Tate's campus): **Solrac** · ID `01GKB01NCKP96WKE961GW9GY40`
+Support: https://instanthpi.ai/donations · or join The Real World through my
+affiliate link: https://jointherealworld.com/a/ppntpkgfpp
