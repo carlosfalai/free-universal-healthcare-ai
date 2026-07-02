@@ -101,6 +101,13 @@ Support the roadmap: https://instanthpi.ai/donations ·
 Physicians Association ($100/mo, keeps InstantHPI free for physicians and
 funds app development): https://buy.stripe.com/4gMcN61u6fehf4I3yfbMQ44
 
+## Security
+
+How to keep identity and clinical data separate in every deployment mode —
+forms (alphanumeric pseudonym IDs), local (keep it all on-device, like paper),
+or prebuilt verifiable systems (Spruce Health, a verifiable EMR) — plus
+per-persona cost lanes: [SECURITY.md](SECURITY.md).
+
 ## License
 
 MIT — take it, run it, translate it, deploy it for your population.
