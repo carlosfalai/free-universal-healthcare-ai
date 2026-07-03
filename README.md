@@ -101,6 +101,12 @@ Support the roadmap: https://instanthpi.ai/donations ·
 Physicians Association ($100/mo, keeps InstantHPI free for physicians and
 funds app development): https://buy.stripe.com/4gMcN61u6fehf4I3yfbMQ44
 
+## Which AI models to use
+
+Best models by MedQA/USMLE score (90-96%, above the human passing bar) + the
+approx cost per consult with one AI vs. a multi-AI council (cents to ~$1):
+[MODELS.md](MODELS.md).
+
 ## Security
 
 How to keep identity and clinical data separate in every deployment mode —
