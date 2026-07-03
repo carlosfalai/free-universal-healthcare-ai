@@ -84,3 +84,25 @@ Claude Opus 4.x figures as of 2026). Always verify against a live leaderboard
 before quoting exact numbers. Not medical advice.*
 
 Sources: MedQA leaderboards at awesomeagents.ai, pricepertoken.com, llm-stats.com (2026).
+
+## Best models for LAW (LegalBench / Bar Exam MBE, 2026)
+
+Human baseline: passing the bar ≈ **58–60% MBE accuracy**. Top AI models now
+score far above the passing lawyer threshold:
+
+| Model | LegalBench | Bar Exam MBE |
+|---|---|---|
+| OpenAI o3 | ~82% | ~95% |
+| GPT-5 | ~80% | ~93% |
+| Claude Opus (4.x) | ~77% | ~91% |
+| Gemini 2.5 Pro | ~74% | ~89% |
+| GPT-4.1 | ~71% | ~88% |
+| DeepSeek R2 | ~68% | — |
+| Claude Sonnet | ~65% | ~85% |
+| Llama 4 Maverick | ~52% | ~72% |
+
+Same caveats as medicine: scores are approximations from independent evals
+(April 2026), benchmarks measure US common law, and being above the passing
+bar on multiple choice ≠ being a lawyer. This is why our /law case-check is
+triage-only — it tells you whether to hire a professional, it never replaces
+one. Sources: awesomeagents.ai legal leaderboard, vals.ai LegalBench.
