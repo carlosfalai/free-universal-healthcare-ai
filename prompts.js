@@ -13,6 +13,8 @@ This is a *medical education tool*, not a doctor. The information provided is ed
 By continuing, you acknowledge this is for *educational purposes only*.
 
 ─────────────────────────────
+📷 *You can also send a photo* of the affected area (a rash, swelling, wound, deformity) or a document (lab result, prescription) any time during the session. The photo's visible findings are read and folded into your assessment.
+
 Please answer these 18 questions in *one message*. You can use numbered answers, commas, or just describe everything naturally — the AI will figure it out.
 
 1. Gender?

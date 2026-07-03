@@ -35,6 +35,7 @@ app.listen(PORT, () => console.log(`HTTP server listening on port ${PORT}`));
 
 const TelegramBot = require('node-telegram-bot-api');
 const https = require('https');
+const { visionEnabled, describeImage, downloadTelegramFileBase64, mediaTypeFor } = require('./vision');
 let trackStart, trackComplete, trackAbandonment, trackLanguageUpdate, getStats, getImpactStats, getImpactHistory, exportCSV;
 try {
   const analytics = require('./analytics');
@@ -170,6 +171,7 @@ function createSession() {
     followupQuestions: [],        // array of 10 question strings
     currentFollowup: 0,           // index into followupQuestions
     followupAnswers: [],          // array of { question, answer } objects
+    examFindings: [],             // array of vision-derived finding strings from uploaded photos
   };
 }
 
@@ -740,16 +742,91 @@ bot.onText(/\/stats/, async (msg) => {
 });
 
 // ─────────────────────────────────────────────────────────────
+// HANDLER: photo / image-document upload
+// Vision model reads the picture, returns objective exam findings,
+// and we store them on the session so the clinical reasoning sees
+// what the patient LOOKS like, not only what they typed.
+// ─────────────────────────────────────────────────────────────
+async function handlePhoto(bot, msg) {
+  const userId = msg.from.id;
+  const chatId = msg.chat.id;
+  const session = sessions.get(userId);
+
+  if (!session) {
+    await bot.sendMessage(chatId, 'Send /start to begin a free medical education session, then you can add a photo of the affected area.');
+    return;
+  }
+  sessionLastActivity.set(userId, Date.now());
+  sessionWarned.delete(userId);
+
+  if (!visionEnabled()) {
+    await bot.sendMessage(chatId, 'Photo analysis is not enabled on this bot. Please describe what you see in words and continue with the questions.');
+    return;
+  }
+
+  // Resolve the best file: largest photo size, or the image document.
+  let fileId, mimeHint = 'image/jpeg';
+  if (msg.photo && msg.photo.length) {
+    fileId = msg.photo[msg.photo.length - 1].file_id; // highest resolution
+  } else if (msg.document) {
+    fileId = msg.document.file_id;
+    mimeHint = msg.document.mime_type || 'image/jpeg';
+  }
+
+  await bot.sendChatAction(chatId, 'typing');
+  const typingInterval = setInterval(() => bot.sendChatAction(chatId, 'typing').catch(() => {}), 4000);
+  try {
+    const file = await bot.getFile(fileId);
+    const b64 = await downloadTelegramFileBase64(BOT_TOKEN, file.file_path);
+    const mediaType = mediaTypeFor(file.file_path || mimeHint);
+    const result = await describeImage(b64, mediaType, msg.caption || '');
+
+    if (!result.ok && result.notMedical) {
+      await bot.sendMessage(chatId, 'That photo doesn\'t look like a medical image (a body part, injury, or medical document). If you meant to show the affected area, please try again with a clear, well-lit photo.');
+      return;
+    }
+    if (!result.ok || !result.findings) {
+      await bot.sendMessage(chatId, 'I couldn\'t read that photo. Please continue with the questions; you can try another photo any time.');
+      return;
+    }
+
+    session.examFindings = session.examFindings || [];
+    session.examFindings.push(result.findings);
+
+    const preface = /^DOCUMENT/i.test(result.findings)
+      ? 'I read your document. This will be included in your assessment:'
+      : 'I noted these visible findings from your photo. They will be included in your assessment:';
+    await bot.sendMessage(chatId, `─────────────────────────────\n${preface}\n\n${result.findings}\n─────────────────────────────\nThis is an educational description, not a diagnosis. Please continue answering the questions — you can add more photos any time.`);
+  } catch (err) {
+    console.error('Photo handling failed:', err.message);
+    await bot.sendMessage(chatId, 'I had trouble reading that photo. Please continue with the questions; you can try another photo any time.');
+  } finally {
+    clearInterval(typingInterval);
+    sessionLastActivity.set(userId, Date.now());
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 // Main message handler — routes based on session state
 // ─────────────────────────────────────────────────────────────
 bot.on('message', async (msg) => {
   // Ignore commands — they are handled by onText above
   if (msg.text && msg.text.startsWith('/')) return;
 
-  // Ignore non-text messages (photos, stickers, etc.)
+  // PHOTO UPLOAD — a patient sent a picture of the affected area (rash,
+  // swelling, wound, deformity, an eye) or a document (lab/prescription).
+  // Run it through the vision model to get objective exam findings and
+  // fold them into the clinical reasoning. Telegram already delivers the
+  // photo; we just read it. Documents sent as files also carry msg.document.
+  if (msg.photo || (msg.document && /^image\//.test(msg.document.mime_type || ''))) {
+    await handlePhoto(bot, msg);
+    return;
+  }
+
+  // Ignore other non-text messages (stickers, voice, etc.)
   if (!msg.text) {
     await bot.sendMessage(msg.chat.id,
-      'Please send a text message. I can only read text during a session.'
+      'Please send a text message, or a photo of the affected area (rash, swelling, wound) or a document (lab result, prescription).'
     );
     return;
   }
@@ -941,9 +1018,14 @@ async function handleIntake(bot, chatId, userId, session, answer) {
     const langInstruction = `\n\nIMPORTANT: Respond entirely in ${getLanguageName(session.language)}. The patient speaks this language.`;
     // Keep sending typing indicator during long AI calls
     const typingInterval = setInterval(() => bot.sendChatAction(chatId, 'typing').catch(() => {}), 4000);
+    const intakeWithExam = (session.examFindings && session.examFindings.length)
+      ? session.intakeForAI + '\n\n=== EXAM FINDINGS FROM PATIENT PHOTOS (objective) ===\n' +
+        session.examFindings.map((f, i) => `Photo ${i + 1}:\n${f}`).join('\n\n') +
+        '\nUse these visible findings to ask sharper, more targeted follow-up questions.'
+      : session.intakeForAI;
     let combined;
     try {
-      combined = await callDeepSeek(HPI_AND_FOLLOWUP_SYSTEM + langInstruction, session.intakeForAI, 0.6);
+      combined = await callDeepSeek(HPI_AND_FOLLOWUP_SYSTEM + langInstruction, intakeWithExam, 0.6);
     } finally {
       clearInterval(typingInterval);
       sessionLastActivity.set(userId, Date.now()); // Refresh timer after long AI call
@@ -1121,6 +1203,12 @@ async function handleFollowup(bot, chatId, userId, session, answer) {
   let assessment = '';
   try {
     // Build the full context for the AI
+    const examBlock = (session.examFindings && session.examFindings.length)
+      ? ['', '=== PHYSICAL EXAM FINDINGS FROM PATIENT PHOTOS (objective, vision-derived) ===',
+         'The patient uploaded photo(s). A vision model described the visible findings below. Treat these as OBJECTIVE EXAM data — weigh them together with the history to sharpen your differential and diagnosis approximation (e.g. rash morphology/spread, edema, trauma, deformity, wound signs, or transcribed document/lab values). Do not over-rely on a single image; reconcile it with the story.',
+         session.examFindings.map((f, i) => `Photo ${i + 1}:\n${f}`).join('\n\n')].join('\n')
+      : '';
+
     const fullContext = [
       '=== INTAKE HISTORY ===',
       session.intakeForAI || formatIntakeForAI(session),
@@ -1130,6 +1218,7 @@ async function handleFollowup(bot, chatId, userId, session, answer) {
       '',
       '=== FOLLOW-UP QUESTIONS & ANSWERS ===',
       session.followupForAI || formatFollowupForAI(session),
+      examBlock,
     ].join('\n');
 
     const langInstruction = `\n\nIMPORTANT: Respond entirely in ${getLanguageName(session.language)}. The patient speaks this language.`;
