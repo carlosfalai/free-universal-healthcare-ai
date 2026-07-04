@@ -76,6 +76,7 @@ const {
   DEEPSEEK_MODEL,
   DEEPSEEK_BASE_URL,
   HPI_AND_FOLLOWUP_SYSTEM,
+  PHOTO_QUESTION_RULE,
   CLINICAL_REASONING_SYSTEM,
   INTAKE_QUESTIONS,
   COMPLETION_MESSAGE,
@@ -1042,7 +1043,7 @@ async function handleIntake(bot, chatId, userId, session, answer) {
       : session.intakeForAI;
     let combined;
     try {
-      combined = await callDeepSeek(HPI_AND_FOLLOWUP_SYSTEM + langInstruction, intakeWithExam, 0.6);
+      combined = await callDeepSeek(HPI_AND_FOLLOWUP_SYSTEM + (visionEnabled() ? PHOTO_QUESTION_RULE : '') + langInstruction, intakeWithExam, 0.6);
     } finally {
       clearInterval(typingInterval);
       sessionLastActivity.set(userId, Date.now()); // Refresh timer after long AI call
@@ -1126,7 +1127,7 @@ async function handleConfirmation(bot, chatId, userId, session, answer) {
       const typingInterval = setInterval(() => bot.sendChatAction(chatId, 'typing').catch(() => {}), 4000);
       let combined;
       try {
-        combined = await callDeepSeek(HPI_AND_FOLLOWUP_SYSTEM + langInstruction,
+        combined = await callDeepSeek(HPI_AND_FOLLOWUP_SYSTEM + (visionEnabled() ? PHOTO_QUESTION_RULE : '') + langInstruction,
           session.intakeForAI + `\n\nPatient correction: ${answer}`, 0.6);
       } finally {
         clearInterval(typingInterval);

@@ -109,6 +109,17 @@ OUTPUT FORMAT (follow exactly):
 9. [question]
 10. [question]`;
 
+// Appended to HPI_AND_FOLLOWUP_SYSTEM by the Telegram bot only when photo
+// analysis is available (Bedrock BAA or Anthropic direct); the web API keeps
+// the plain prompt because that surface has no photo upload.
+const PHOTO_QUESTION_RULE = `
+
+ADDITIONAL RULE — QUESTION 10 IS A PHOTO REQUEST:
+Photo analysis is enabled on this bot. Question 10 must ALWAYS be a request for a photo, written in the patient's language and starting with the 📷 emoji:
+- If the concern involves anything visible (skin, rash, swelling, wound, injury, deformity, eye, nail, bite, lump, etc.), ask for a clear, well-lit photo of the affected area.
+- Otherwise, ask for a photo of any relevant document they may have (lab result, prescription, imaging report, medication boxes) and say they can answer "no" if they have none.
+Questions 1-9 remain the differential-narrowing questions described above.`;
+
 // Keep FOLLOWUP_SYSTEM export for backward compatibility but it is no longer used
 const FOLLOWUP_SYSTEM = 'deprecated';
 
@@ -386,6 +397,7 @@ module.exports = {
   DEEPSEEK_MODEL,
   DEEPSEEK_BASE_URL,
   HPI_AND_FOLLOWUP_SYSTEM,
+  PHOTO_QUESTION_RULE,
   FOLLOWUP_SYSTEM,
   CLINICAL_REASONING_SYSTEM,
   INTAKE_QUESTIONS,
