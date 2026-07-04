@@ -33,10 +33,14 @@
 // ─────────────────────────────────────────────────────────────
 
 const https = require('https');
+const { bedrockAvailable, converseVision } = require('./bedrock');
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const VISION_MODEL = process.env.VISION_MODEL || 'claude-haiku-4-5';
-const visionEnabled = () => !!ANTHROPIC_API_KEY;
+// Vision runs through the first configured backend, in this order:
+//   1. AWS Bedrock (BAA boundary) — Haiku 4.5, same $1/$5 price as direct
+//   2. Anthropic API direct — needs ANTHROPIC_API_KEY
+const visionEnabled = () => bedrockAvailable() || !!ANTHROPIC_API_KEY;
 
 // System prompt: chart the exam, don't diagnose from the pixel alone.
 const VISION_SYSTEM = `You are a clinical documentation assistant for a free medical-education tool. A patient has uploaded a photo during an educational health-history session. Your ONLY job is to describe, in neutral clinical language, what is objectively visible — the way a clinician charts a physical exam or reads a document. This is an EDUCATIONAL description, not a diagnosis.
@@ -123,16 +127,35 @@ function describeImageOnce(imageBase64, mediaType, caption) {
   });
 }
 
-// Retry wrapper — 2 attempts.
+// One vision call through Bedrock (BAA). Same contract as describeImageOnce.
+async function describeImageBedrock(imageBase64, mediaType, caption) {
+  const format = mediaType.includes('png') ? 'png' : mediaType.includes('webp') ? 'webp' : mediaType.includes('gif') ? 'gif' : 'jpeg';
+  const captionText = caption && caption.trim()
+    ? `The patient added this note with the photo: "${caption.trim()}". Use it only to orient which area to describe; still describe only what you see.`
+    : 'Describe the clinically relevant visible findings.';
+  const text = await converseVision(VISION_SYSTEM, imageBase64, format, captionText);
+  if (/^NOT_MEDICAL/i.test(text)) return { ok: false, notMedical: true };
+  return { ok: true, findings: text };
+}
+
+// Retry wrapper — 2 attempts. Bedrock (BAA) first when configured,
+// Anthropic-direct otherwise.
 async function describeImage(imageBase64, mediaType, caption) {
+  const useBedrock = bedrockAvailable();
   let lastErr;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      return await describeImageOnce(imageBase64, mediaType, caption);
+      return useBedrock
+        ? await describeImageBedrock(imageBase64, mediaType, caption)
+        : await describeImageOnce(imageBase64, mediaType, caption);
     } catch (err) {
       lastErr = err;
       if (attempt < 2) await new Promise((r) => setTimeout(r, 1200 * attempt));
     }
+  }
+  // If Bedrock failed twice and a direct key exists, last-ditch fallback.
+  if (useBedrock && ANTHROPIC_API_KEY) {
+    try { return await describeImageOnce(imageBase64, mediaType, caption); } catch (_) {}
   }
   throw lastErr;
 }

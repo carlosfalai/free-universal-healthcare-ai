@@ -36,6 +36,7 @@ app.listen(PORT, () => console.log(`HTTP server listening on port ${PORT}`));
 const TelegramBot = require('node-telegram-bot-api');
 const https = require('https');
 const { visionEnabled, describeImage, downloadTelegramFileBase64, mediaTypeFor } = require('./vision');
+const { bedrockReasoningEnabled, converseText, REASONING_MODEL_ID } = require('./bedrock');
 let trackStart, trackComplete, trackAbandonment, trackLanguageUpdate, getStats, getImpactStats, getImpactHistory, exportCSV;
 try {
   const analytics = require('./analytics');
@@ -355,8 +356,24 @@ async function callDeepSeekOnce(systemPrompt, userContent, temperature = 0.7) {
   });
 }
 
-// Retry wrapper — 3 attempts with exponential backoff
+// Retry wrapper — 3 attempts with exponential backoff.
+// When BEDROCK_REASONING=1 and AWS credentials are set, reasoning runs on
+// DeepSeek V3.2 INSIDE the AWS BAA boundary (deepseek.v3.2, $0.62/$1.85 per
+// MTok — data stays on AWS US infra) instead of DeepSeek's own API
+// (cheaper: V4 Flash $0.14/$0.28, V4 Pro $0.435/$0.87 — but no BAA).
 async function callDeepSeek(systemPrompt, userContent, temperature = 0.7) {
+  if (bedrockReasoningEnabled()) {
+    const MAX_RETRIES = 3;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        return await converseText(REASONING_MODEL_ID, systemPrompt, userContent, { maxTokens: 4096, temperature });
+      } catch (err) {
+        console.warn(`Bedrock reasoning attempt ${attempt} failed:`, err.message);
+        if (attempt === MAX_RETRIES) throw err;
+        await new Promise((r) => setTimeout(r, 2000 * attempt));
+      }
+    }
+  }
   const MAX_RETRIES = 3;
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
