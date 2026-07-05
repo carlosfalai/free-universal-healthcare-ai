@@ -120,6 +120,28 @@ forms (alphanumeric pseudonym IDs), local (keep it all on-device, like paper),
 or prebuilt verifiable systems (Spruce Health, a verifiable EMR) — plus
 per-persona cost lanes: [SECURITY.md](SECURITY.md).
 
+## Other things we've built
+
+Everything below is built and maintained by the same one-doctor team, released
+publicly for anyone to use, fork, or learn from. All AI-automated, all
+disclosed as such.
+
+| Project | Who it's for | What's inside |
+|---|---|---|
+| [instanthpi-web](https://github.com/carlosfalai/instanthpi-web) | Anyone wanting to support or follow the project | The public pages of instanthpi.ai — donations + supporter wall, $35 courses (free at 1000 buyers), hash-chained thread ledger |
+| [instanthpi-for-doctors](https://github.com/carlosfalai/instanthpi-for-doctors) | Physicians automating their own practice | The carousel case-review architecture, AI-council verification, the Physician Guild — 100% AI work, 100% physician verification, no patient data ever leaves the boundary |
+| [instanthpi-pdf-filler](https://github.com/carlosfalai/instanthpi-pdf-filler) | Doctors/clinics buried in paperwork | Fills any fillable PDF form straight from a patient conversation or SOAP note using AI; local-model option for full privacy |
+| [corporatehealth-site](https://github.com/carlosfalai/corporatehealth-site) | Employers running workplace health benefits | AI-accelerated, physician-signed corporate & occupational health — screening bilan de santé + medical-risk assessments |
+| [freeeducationhealth](https://github.com/carlosfalai/freeeducationhealth) | Regions with severe physician scarcity (self-hosters) | Free health education, triage guidance, and physician documentation automation — self-hosted, open source, no monetization |
+| [snapcal-bot](https://github.com/carlosfalai/snapcal-bot) | Anyone tracking what they eat | Telegram calorie-counter bot — photograph a meal, see your day; AWS Bedrock vision + Stripe subscription |
+| [telegram-bot-best-practices](https://github.com/carlosfalai/telegram-bot-best-practices) | Developers building their own Telegram bots | Hard-won patterns — polling config, error recovery, EADDRINUSE handling, PM2, single-instance guards, payment webhooks |
+| [m28-site](https://github.com/carlosfalai/m28-site) | Commercial drivers needing a medical fitness exam | SAAQ M28/M29 commercial-driver medical exam intake funnel |
+| [old-masters-backend](https://github.com/carlosfalai/old-masters-backend) | Anyone commissioning custom art | Backend turning a photo into art "in the style of" classic master painters |
+
+Not every project we run is open source — some handle real patient data under
+a signed HIPAA BAA and stay private for that reason. What's listed above is
+everything we've been able to release publicly.
+
 ## License
 
 MIT — take it, run it, translate it, deploy it for your population.
