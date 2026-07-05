@@ -378,12 +378,12 @@ If you are experiencing a medical emergency, call your local emergency number (9
 To start a new session, send /start
 
 ─────────────────────────────
-💛 *Would you like to help keep this free?*
+💛 *Support the cause — Donate*
 
-This service is free for anyone who needs it, and it stays free because of donations. If it helped you and you'd like to chip in any amount, you can donate here:
+This bot will remain free for as long as we have money to put in it. Help us secure the future:
 https://buy.stripe.com/00w00kgp0aY14q44CjbMQ43
 
-Thank you for your donations — they are what keep this free and available to anyone using it. Using this bot is always free; donating is completely optional.`;
+Thank you — every donation keeps free healthcare education available to anyone who needs it.`;
 
 const LANGUAGE_PROMPT = `Welcome to InstantHPI — Free Medical Education
 
