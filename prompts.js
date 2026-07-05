@@ -375,7 +375,15 @@ const COMPLETION_MESSAGE = `─────────────────�
 
 If you are experiencing a medical emergency, call your local emergency number (911, 112, or equivalent) immediately.
 
-To start a new session, send /start`;
+To start a new session, send /start
+
+─────────────────────────────
+💛 *Would you like to help keep this free?*
+
+This service is free for anyone who needs it, and it stays free because of donations. If it helped you and you'd like to chip in any amount, you can donate here:
+https://buy.stripe.com/00w00kgp0aY14q44CjbMQ43
+
+Thank you for your donations — they are what keep this free and available to anyone using it. Using this bot is always free; donating is completely optional.`;
 
 const LANGUAGE_PROMPT = `Welcome to InstantHPI — Free Medical Education
 
