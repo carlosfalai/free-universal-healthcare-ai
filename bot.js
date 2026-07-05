@@ -88,7 +88,7 @@ const {
 const BOT_TOKEN = process.env.INSTANTHPI_BOT_TOKEN;
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 const ADMIN_USER_ID = process.env.ADMIN_USER_ID ? Number(process.env.ADMIN_USER_ID) : null;
-const WEB_API_KEY = process.env.WEB_API_KEY || 'instanthpi-web-2026'; // Protect web endpoints
+const WEB_API_KEY = process.env.WEB_API_KEY || null; // no hardcoded default — web endpoints fail closed if WEB_API_KEY is unset
 
 if (!BOT_TOKEN && process.env.WEB_ONLY !== 'true') {
   console.error('ERROR: INSTANTHPI_BOT_TOKEN is not set in your .env file');
@@ -158,7 +158,7 @@ const MAX_PER_DAY = 3;              // 3 consultations per user per day
 // Global abuse protection — no daily cap
 let globalConsultationsToday = 0;
 let globalDate = new Date().toDateString();
-const GLOBAL_DAILY_CAP = Infinity;  // no global daily cap
+const GLOBAL_DAILY_CAP = process.env.GLOBAL_DAILY_CAP ? Number(process.env.GLOBAL_DAILY_CAP) : 500;  // global daily cap — protects your AI bill from floods; set GLOBAL_DAILY_CAP env to override
 
 // ─────────────────────────────────────────────────────────────
 // Session factory
@@ -1419,6 +1419,10 @@ app.get('/stats', (_req, res) => {
 // Protected by WEB_API_KEY to prevent abuse
 // ─────────────────────────────────────────────────────────────
 function checkWebApiKey(req, res) {
+  if (!WEB_API_KEY) {
+    res.status(503).json({ error: 'Web API is disabled — set WEB_API_KEY to enable it' });
+    return false;
+  }
   const key = req.headers['x-api-key'] || req.query.key;
   if (key !== WEB_API_KEY) {
     res.status(401).json({ error: 'Invalid or missing API key' });
